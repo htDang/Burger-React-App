@@ -5,7 +5,7 @@ const order = (props) => {
   // Case 1:
   // let ingredientsOutput = '';
   // for (const [key, value] of Object.entries(props.ingredients)) {
-  //   ingredients += key + '(' + value + ') ';
+  //   ingredientsOutput += key + '(' + value + ') ';
   // }
 
   // Case 2:

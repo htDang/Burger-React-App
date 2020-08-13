@@ -1,9 +1,12 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import axios from '../../../axios-orders';
+import withErrorHandler from '../../../hoc/withErrorHandler/widthErrorHandler';
+import * as actions from '../../../store/actions/index';
+
 import Button from '../../../comoponents/UI/Button/Button';
 import Spinner from '../../../comoponents/UI/Spinner/Spinner';
 import styles from './ContactData.module.css';
-import axios from '../../../axios-orders';
 import Input from '../../../comoponents/UI/Input/Input';
 
 class ContactData extends Component {
@@ -95,7 +98,6 @@ class ContactData extends Component {
       },
     },
     formIsValid: false,
-    loading: false,
   };
 
   checkValidaty(value, rules) {
@@ -112,27 +114,27 @@ class ContactData extends Component {
     if (rules.minLength) {
       isValid = value.length >= rules.minLength && isValid;
     }
-    
+
     if (rules.maxLength) {
       isValid = value.length <= rules.maxLength && isValid;
     }
-    
+
     if (rules.isEmail) {
       const pattern = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
-      isValid = pattern.test(value) && isValid
-  }
+      isValid = pattern.test(value) && isValid;
+    }
 
-  if (rules.isNumeric) {
+    if (rules.isNumeric) {
       const pattern = /^\d+$/;
-      isValid = pattern.test(value) && isValid
-  }
+      isValid = pattern.test(value) && isValid;
+    }
 
     return isValid;
   }
 
   orderHandler = (event) => {
     event.preventDefault();
-    this.setState({ loading: true });
+
     let formData = {};
     for (const key in this.state.orderForm) {
       formData[key] = this.state.orderForm[key];
@@ -142,22 +144,17 @@ class ContactData extends Component {
       price: this.props.price,
       orderData: formData,
     };
-    axios
-      .post('orders.json', order)
-      .then((response) => {
-        this.setState({ loading: false });
-        this.props.history.push('/');
-      })
-      .catch((error) => {
-        this.setState({ loading: false });
-      });
+    this.props.onOrderBurger(order);
   };
 
   inputChangedHandler = (event, inputIdentifier) => {
     const updatedOrderForm = { ...this.state.orderForm };
     const updatedFormElement = { ...updatedOrderForm[inputIdentifier] };
     updatedFormElement.value = event.target.value;
-    updatedFormElement.valid = this.checkValidaty(updatedFormElement.value, updatedFormElement.validation);
+    updatedFormElement.valid = this.checkValidaty(
+      updatedFormElement.value,
+      updatedFormElement.validation
+    );
     updatedFormElement.touched = true;
     updatedOrderForm[inputIdentifier] = updatedFormElement;
 
@@ -195,11 +192,13 @@ class ContactData extends Component {
             />
           );
         })}
-        <Button btnType="Success" disabled={!this.state.formIsValid}>ORDER</Button>
+        <Button btnType="Success" disabled={!this.state.formIsValid}>
+          ORDER
+        </Button>
       </form>
     );
 
-    if (this.state.loading) {
+    if (this.props.loading) {
       form = <Spinner />;
     }
 
@@ -214,9 +213,19 @@ class ContactData extends Component {
 
 const mapStateToProps = (state) => {
   return {
-    ings: state.ingredients,
-    price: state.totalPrice,
+    ings: state.burgerBuilder.ingredients,
+    price: state.burgerBuilder.totalPrice,
+    loading: state.order.loading,
   };
 };
 
-export default connect(mapStateToProps)(ContactData);
+const mapDispatchToProps = (dispatch) => {
+  return {
+    onOrderBurger: (orderData) => dispatch(actions.purchaseBurger(orderData)),
+  };
+};
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(withErrorHandler(ContactData, axios));
