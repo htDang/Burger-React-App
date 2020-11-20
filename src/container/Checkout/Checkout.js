@@ -3,8 +3,6 @@ import { Route, Redirect } from 'react-router-dom';
 import CheckoutSummary from '../../comoponents/Order/CheckoutSummary/CheckoutSummary';
 import ContactData from './ContactData/ContactData';
 import { connect } from 'react-redux';
-import * as actions from '../../store/actions/index';
-import { purchaseBurgerStart } from '../../store/actions/order';
 
 class Checkout extends Component {
   // state = {
